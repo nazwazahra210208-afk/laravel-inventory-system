@@ -9,6 +9,14 @@ use App\Models\Supplier;
 
 class ProductController extends Controller
 {
+    // Fungsi pengaman: Hanya Admin yang boleh akses menu manajemen data
+    private function authorizeAdmin()
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'supplier']);
@@ -37,6 +45,8 @@ class ProductController extends Controller
 
     public function create()
     {
+        $this->authorizeAdmin(); // Staff / Customer dicegat di sini (Muncul Error 403)
+
         $categories = Category::all();
         $suppliers = Supplier::all();
 
@@ -45,6 +55,8 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizeAdmin(); // Staff / Customer dicegat di sini
+
         $request->validate([
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
             'name' => ['required', 'string', 'max:150'],
@@ -72,6 +84,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $this->authorizeAdmin(); // Staff / Customer dicegat di sini
+
         $categories = Category::all();
         $suppliers = Supplier::all();
 
@@ -80,6 +94,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->authorizeAdmin(); // Staff / Customer dicegat di sini
+
         $request->validate([
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku,' . $product->id],
             'name' => ['required', 'string', 'max:150'],
@@ -91,7 +107,6 @@ class ProductController extends Controller
             'minimum_stock' => ['required', 'integer', 'min:0'],
         ]);
 
-        // Simpan menggunakan property assignment langsung agar pasti masuk ke database
         $product->category_id = $request->category_id;
         $product->supplier_id = $request->supplier_id ?: null;
         $product->sku = $request->sku;
@@ -107,6 +122,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->authorizeAdmin(); // Staff / Customer dicegat di sini
+
         if ($product->saleItems()->count() > 0 || $product->purchaseItems()->count() > 0) {
             return redirect()->route('products.index')->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
         }
