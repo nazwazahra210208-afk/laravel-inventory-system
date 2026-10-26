@@ -2,33 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'product_id',
         'user_id',
         'type',
         'quantity',
-        'notes',
+        'total_harga',
     ];
 
     /**
-     * Relasi ke model Product
+     * Relasi: Transaksi terhubung ke satu Produk
      */
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
     /**
-     * Relasi ke model User
+     * Relasi: Transaksi dilakukan oleh satu Pengguna (User)
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

@@ -2,42 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'category_id',
+        'supplier_id',
         'sku',
         'name',
-        'price',
+        'purchase_price',
+        'selling_price',
         'stock',
+        'minimum_stock',
     ];
 
-    /**
-     * Relasi ke model Category (Many to One)
-     */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Relasi ke model Supplier (Many to Many)
-     */
-    public function suppliers()
+    public function supplier(): BelongsTo
     {
-        return $this->belongsToMany(Supplier::class, 'product_supplier');
+        return $this->belongsTo(Supplier::class, 'supplier_id', 'id');
     }
 
-    /**
-     * Relasi ke model Transaction
-     */
-    public function transactions()
+    public function saleItems()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class);
     }
 }

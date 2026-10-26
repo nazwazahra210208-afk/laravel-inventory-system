@@ -2,27 +2,30 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Product>
- */
 class ProductFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'category_id' => 1, // Pastikan kategori dengan ID 1 sudah ada
-        'sku' => fake()->unique()->bothify('SKU-####'),
-        'name' => fake()->words(3, true),
-        'price' => fake()->randomFloat(2, 10000, 500000),
-        'stock' => fake()->numberBetween(0, 100),
+            'category_id' => fake()->numberBetween(1, 2), // Menyebar kategori secara acak antara 1 dan 2
+            'sku' => 'LUX-' . fake()->unique()->numerify('###'),
+            'name' => fake()->unique()->randomElement([
+                'Rolex Submariner Date Watch',
+                'Cartier Love Gold Bracelet',
+                'Chanel Classic Flap Handbag',
+                'Louis Vuitton Keepall Bandouliere',
+                'Hermes Birkin Leather Bag',
+                'Tom Ford Private Blend Perfume',
+                'Apple iPhone 17 Pro Max Gold Edition',
+                'Bvlgari B.zero1 Ring Diamond',
+                'Tiffany & Co. Solitaire Diamond Ring',
+                'Patek Philippe Nautilus Luxury'
+            ]),
+            'purchase_price' => fake()->numberBetween(5000000, 15000000), // Harga beli realistis
+            'selling_price' => fake()->numberBetween(16000000, 35000000), // Harga jual realistis
+            'stock' => fake()->numberBetween(5, 25),
         ];
     }
 }

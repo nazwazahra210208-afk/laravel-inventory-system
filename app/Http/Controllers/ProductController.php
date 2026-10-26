@@ -2,115 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $category_id = $request->input('category_id');
-        $sort = $request->input('sort', 'latest');
+        $query = Product::with(['category', 'supplier']);
 
-        $query = Product::with(['category', 'suppliers']);
-
-        if ($search) {
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('sku', 'like', '%' . $search . '%');
             });
         }
 
-        if ($category_id) {
-            $query->where('category_id', $category_id);
+        if ($request->has('category_id') && $request->category_id != '') {
+            $query->where('category_id', $request->category_id);
         }
 
-        switch ($sort) {
-            case 'price_low':
-                $query->orderBy('price', 'asc');
-                break;
-            case 'price_high':
-                $query->orderBy('price', 'desc');
-                break;
-            case 'name_asc':
-                $query->orderBy('name', 'asc');
-                break;
-            case 'stock_low':
-                $query->orderBy('stock', 'asc');
-                break;
-            case 'latest':
-            default:
-                $query->latest();
-                break;
-        }
-
-        $products = $query->paginate(5)->withQueryString();
+        $products = $query->paginate(10)->appends($request->query());
         $categories = Category::all();
 
-        return view('products.index', compact('products', 'categories', 'search', 'category_id', 'sort'));
+        if (auth()->user() && auth()->user()->role === 'customer') {
+            return view('customer.products.index', compact('products', 'categories'));
+        }
+
+        return view('products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
-        $suppliers = Supplier::all();
         $categories = Category::all();
-        return view('products.create', compact('suppliers', 'categories'));
+        $suppliers = Supplier::all();
+
+        return view('products.create', compact('categories', 'suppliers'));
     }
 
     public function store(Request $request)
     {
-        // Validasi ketat untuk mencegah input berbahaya dan SQL Injection
-        $validated = $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
+        $request->validate([
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
             'name' => ['required', 'string', 'max:150'],
-            'price' => ['required', 'numeric', 'min:0'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'supplier_id' => ['nullable', 'exists:suppliers,id'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'suppliers' => ['nullable', 'array'],
-            'suppliers.*' => ['exists:suppliers,id'],
+            'minimum_stock' => ['required', 'integer', 'min:0'],
         ]);
 
-        $product = Product::create($validated);
+        $product = new Product();
+        $product->category_id = $request->category_id;
+        $product->supplier_id = $request->supplier_id ?: null;
+        $product->sku = $request->sku;
+        $product->name = $request->name;
+        $product->purchase_price = $request->purchase_price;
+        $product->selling_price = $request->selling_price;
+        $product->stock = $request->stock;
+        $product->minimum_stock = $request->minimum_stock;
+        $product->save();
 
-        if ($request->has('suppliers')) {
-            $product->suppliers()->sync($request->suppliers);
-        }
-
-        return redirect()->route('products.index')->with('success', 'Produk berhasil diamankan dan ditambahkan.');
+        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function edit(Product $product)
     {
-        $suppliers = Supplier::all();
         $categories = Category::all();
-        return view('products.edit', compact('product', 'suppliers', 'categories'));
+        $suppliers = Supplier::all();
+
+        return view('products.edit', compact('product', 'categories', 'suppliers'));
     }
 
     public function update(Request $request, Product $product)
     {
-        $validated = $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
+        $request->validate([
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku,' . $product->id],
             'name' => ['required', 'string', 'max:150'],
-            'price' => ['required', 'numeric', 'min:0'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'supplier_id' => ['nullable', 'exists:suppliers,id'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'suppliers' => ['nullable', 'array'],
-            'suppliers.*' => ['exists:suppliers,id'],
+            'minimum_stock' => ['required', 'integer', 'min:0'],
         ]);
 
-        $product->update($validated);
-        $product->suppliers()->sync($request->input('suppliers', []));
+        // Simpan menggunakan property assignment langsung agar pasti masuk ke database
+        $product->category_id = $request->category_id;
+        $product->supplier_id = $request->supplier_id ?: null;
+        $product->sku = $request->sku;
+        $product->name = $request->name;
+        $product->purchase_price = $request->purchase_price;
+        $product->selling_price = $request->selling_price;
+        $product->stock = $request->stock;
+        $product->minimum_stock = $request->minimum_stock;
+        $product->save();
 
-        return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui dengan aman.');
+        return redirect()->route('products.index')->with('success', 'Data produk berhasil diperbarui.');
     }
 
     public function destroy(Product $product)
     {
-        if (auth()->check() && strtolower(auth()->user()->role) !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'Akses Ditolak! Hanya Admin yang dapat menghapus produk.');
+        if ($product->saleItems()->count() > 0 || $product->purchaseItems()->count() > 0) {
+            return redirect()->route('products.index')->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
         }
 
         $product->delete();

@@ -1,47 +1,48 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CartController;
 
-// Halaman utama diarahkan langsung ke Dashboard
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return redirect()->route('login');
 });
 
-// Rute yang dilindungi oleh middleware 'auth' (Harus Login)
 Route::middleware(['auth'])->group(function () {
-    // Dashboard & Laporan Inventory
+    
+    // Dashboard (Otomatis membedakan Admin/Staff vs Customer)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Produk
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    // Manajemen Inventaris & Katalog
+    Route::resource('products', ProductController::class);
+    Route::resource('categories', CategoryController::class);
+    Route::resource('suppliers', SupplierController::class);
+    Route::resource('transactions', TransactionController::class);
+    
+    // Fitur Pembelian & Keranjang Customer
+    Route::post('/customer/buy/{id}', [TransactionController::class, 'customerBuy'])->name('customer.buy');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
-    // Master Data Kategori
-    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-
-    // Master Data Supplier
-    Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
-    Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
-    Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
-
-    // Transaksi (Barang Masuk, Keluar, & Riwayat)
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/in', [TransactionController::class, 'createIn'])->name('transactions.in');
-    Route::post('/transactions/in', [TransactionController::class, 'storeIn'])->name('transactions.in.store');
-    Route::get('/transactions/out', [TransactionController::class, 'createOut'])->name('transactions.out');
-    Route::post('/transactions/out', [TransactionController::class, 'storeOut'])->name('transactions.out.store');
+    // Profil Pengguna & Riwayat Transaksi Customer
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    Route::get('/customer/profile', [TransactionController::class, 'customerHistory'])->name('customer.profile');
 });
 
-// Memuat rute autentikasi bawaan
 require __DIR__.'/auth.php';

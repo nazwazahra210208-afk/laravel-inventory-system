@@ -48,3 +48,19 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di komputer lokal And
    ```bash
    git clone [https://github.com/username/nama-repository.git](https://github.com/username/nama-repository.git)
    cd nama-repository
+
+## 👥 Akun Demo (Demo Accounts)
+
+Gunakan kredensial berikut untuk menguji hak akses aplikasi:
+- **Admin / Owner:** `admin@gmail.com` / `password`
+- **Staff Gudang:** `staff@gmail.com` / `password`
+- **Customer VIP:** `customer@gmail.com` / `password`
+
+---
+
+## 📊 Database ERD & Relasi Model
+- `users` 1 ── * `sales` / `purchases`
+- `categories` 1 ── * `products`
+- `suppliers` 1 ── * `purchases`
+- `sales` 1 ── * `sale_items`
+- `products` 1 ── * `sale_items` / `purchase_items`

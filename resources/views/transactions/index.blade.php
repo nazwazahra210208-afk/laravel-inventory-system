@@ -1,67 +1,113 @@
 @extends('layouts.app')
 
 @section('content')
-    <div style="background: #ffffff; padding: 35px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+<div class="py-12" style="background-color: #0b0f19 !important; min-height: 100vh;">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        
+        <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
             <div>
-                <h2 style="color: #0f172a; margin: 0 0 6px 0; font-size: 24px; font-weight: 700;">Riwayat Transaksi Stok</h2>
-                <p style="color: #64748b; font-size: 14px; margin: 0;">Log aktivitas barang masuk dan keluar gudang</p>
+                <h2 class="text-2xl font-bold" style="color: #fef08a !important;">Daftar Transaksi Inventaris</h2>
+                <p class="text-sm mt-1" style="color: #94a3b8 !important;">Kelola dan pantau riwayat barang masuk, barang keluar, serta pembelian customer</p>
             </div>
-            
-            <!-- Tombol Aksi dengan Tema Luxury Gold & Dark yang Serasi -->
-            <div style="display: flex; gap: 10px;">
-                <a href="{{ route('transactions.in') }}" style="background: rgba(202, 138, 4, 0.12); color: #ca8a04; border: 1px solid rgba(202, 138, 4, 0.3); padding: 10px 18px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s;">+ Barang Masuk</a>
-                <a href="{{ route('transactions.out') }}" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1px solid rgba(15, 23, 42, 0.3); padding: 10px 18px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">- Barang Keluar</a>
+            <div>
+                <a href="{{ route('transactions.create') }}" style="background: linear-gradient(135deg, #fef08a 0%, #ca8a04 100%); color: #1a1a1a; font-weight: 600; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; display: inline-block;">
+                    + Tambah Transaksi Manual
+                </a>
             </div>
         </div>
 
         @if(session('success'))
-            <div style="background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; padding: 14px 18px; border-radius: 10px; margin-bottom: 25px; font-size: 14px; font-weight: 500;">{{ session('success') }}</div>
+            <div style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); color: #86efac; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                {{ session('success') }}
+            </div>
         @endif
 
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Waktu</th>
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Produk</th>
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Tipe</th>
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Jumlah</th>
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Catatan</th>
-                        <th style="padding: 14px 18px; text-align: left; font-size: 12px; color: #475569; text-transform: uppercase;">Operator</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($transactions as $trx)
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 16px 18px; color: #64748b; font-size: 13px;">{{ $trx->created_at->format('d/m/Y H:i') }}</td>
-                            <td style="padding: 16px 18px; font-weight: 600; color: #0f172a; font-size: 14px;">{{ $trx->product->name ?? 'Produk Dihapus' }}</td>
-                            <td style="padding: 16px 18px;">
-                                @if($trx->type === 'in')
-                                    <span style="background: rgba(202, 138, 4, 0.12); color: #ca8a04; border: 1px solid rgba(202, 138, 4, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">MASUK</span>
-                                @else
-                                    <span style="background: rgba(15, 23, 42, 0.08); color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">KELUAR</span>
-                                @endif
-                            </td>
-                            <td style="padding: 16px 18px; font-weight: 700; color: #0f172a; font-size: 14px;">{{ $trx->quantity }}</td>
-                            <td style="padding: 16px 18px; color: #64748b; font-size: 13px;">{{ $trx->notes }}</td>
-                            <td style="padding: 16px 18px; color: #334155; font-size: 13px; font-weight: 500;">{{ $trx->user->name ?? 'System' }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6" style="padding: 40px; text-align: center; color: #64748b; font-size: 14px;">Belum ada riwayat transaksi.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="overflow-hidden shadow-sm sm:rounded-lg" style="background-color: #111827 !important; border: 1px solid #1f2937 !important; padding: 24px;">
+            
+            <!-- Tabel 1: Penjualan VIP Customer (Sales) -->
+            <div class="mb-8">
+                <h3 style="color: #fef08a; font-size: 18px; font-weight: 600; margin-bottom: 14px;">🛒 Riwayat Penjualan ke Customer VIP</h3>
+                <div class="overflow-x-auto">
+                    <table style="width: 100%; border-collapse: collapse; background-color: #111827; color: #f3f4f6;">
+                        <thead>
+                            <tr style="background-color: #1f2937; border-bottom: 1px solid #374151;">
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">INVOICE</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">TANGGAL</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">CUSTOMER</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">PRODUK & QTY</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">TOTAL HARGA</th>
+                                <th style="padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 600; color: #fbbf24;">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($salesAsTransactions ?? [] as $sale)
+                                <tr style="border-bottom: 1px solid #1f2937;">
+                                    <td style="padding: 14px; font-size: 13px; font-weight: 600; color: #fef08a;">{{ $sale->sale_number }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #94a3b8;">{{ $sale->created_at->format('d M Y, H:i') }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #ffffff;">{{ $sale->user->name ?? 'Customer VIP' }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #f3f4f6;">
+                                        @foreach($sale->items as $item)
+                                            <div>{{ $item->product->name ?? '-' }} ({{ $item->quantity }} unit)</div>
+                                        @endforeach
+                                    </td>
+                                    <td style="padding: 14px; font-size: 13px; font-weight: 600; color: #fef08a;">Rp {{ number_format($sale->total, 0, ',', '.') }}</td>
+                                    <td style="padding: 14px; text-align: center;">
+                                        <span style="background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">Selesai</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic; font-size: 13px;">Belum ada transaksi penjualan customer.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabel 2: Transaksi Manual Inventaris (In/Out) -->
+            <div>
+                <h3 style="color: #fef08a; font-size: 18px; font-weight: 600; margin-bottom: 14px;">📦 Catatan Barang Masuk / Keluar Manual</h3>
+                <div class="overflow-x-auto">
+                    <table style="width: 100%; border-collapse: collapse; background-color: #111827; color: #f3f4f6;">
+                        <thead>
+                            <tr style="background-color: #1f2937; border-bottom: 1px solid #374151;">
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">ID</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">TANGGAL</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">PRODUK</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">TIPE</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">JUMLAH</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">TOTAL HARGA</th>
+                                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #fbbf24;">PETUGAS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($transactions ?? [] as $trx)
+                                <tr style="border-bottom: 1px solid #1f2937;">
+                                    <td style="padding: 14px; font-size: 13px; font-weight: 600; color: #fef08a;">#{{ $trx->id }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #94a3b8;">{{ $trx->created_at->format('d M Y, H:i') }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #ffffff;">{{ $trx->product->name ?? '-' }}</td>
+                                    <td style="padding: 14px; font-size: 12px;">
+                                        <span style="background: {{ $trx->type == 'in' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)' }}; color: {{ $trx->type == 'in' ? '#86efac' : '#fca5a5' }}; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+                                            {{ strtoupper($trx->type) }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 14px; font-size: 13px; color: #f3f4f6;">{{ $trx->quantity }} unit</td>
+                                    <td style="padding: 14px; font-size: 13px; font-weight: 600; color: #fef08a;">Rp {{ number_format($trx->total_harga ?? 0, 0, ',', '.') }}</td>
+                                    <td style="padding: 14px; font-size: 13px; color: #94a3b8;">{{ $trx->user->name ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic; font-size: 13px;">Belum ada catatan transaksi manual.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
-        <style>
-            nav svg { width: 16px !important; height: 16px !important; display: inline-block !important; vertical-align: middle; }
-            .pagination { display: flex; gap: 6px; justify-content: flex-end; align-items: center; margin-top: 30px; list-style: none; padding: 0; }
-            .pagination li a, .pagination li span { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; color: #334155; font-size: 13px; display: inline-block; background: #ffffff; }
-            .pagination li.active span { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-color: #0f172a; font-weight: 600; }
-            .pagination li.disabled span { color: #94a3b8; background-color: #f8fafc; }
-        </style>
-
-        <div style="margin-top: 25px;">{{ $transactions->links() }}</div>
     </div>
+</div>
 @endsection
